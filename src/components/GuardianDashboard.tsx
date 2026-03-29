@@ -148,152 +148,160 @@ export default function GuardianDashboard() {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col pb-8 space-y-4 overflow-y-auto h-full"
+      className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full relative"
     >
-      <div className={`p-5 rounded-3xl shadow-xl flex justify-between items-center relative overflow-hidden border transition-colors ${
-        isBeaconActive 
-          ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400/50' 
-          : 'bg-slate-100 text-slate-500 border-slate-200'
-      }`}>
-        {isBeaconActive && (
-          <div className="absolute right-0 top-0 opacity-20">
-            <Radar className="w-32 h-32 animate-spin-slow" />
-          </div>
-        )}
-        <div className="relative z-10 flex-1">
-          <h2 className="text-xl font-black flex items-center gap-2 tracking-wide">
-            <Radio className={`w-6 h-6 ${isBeaconActive ? 'text-emerald-200 animate-pulse' : 'text-slate-400'}`} /> 
-            {isBeaconActive ? 'Active Beacon' : 'Beacon Offline'}
-          </h2>
-          <p className={`font-medium mt-1 flex items-center gap-2 ${isBeaconActive ? 'text-emerald-50' : 'text-slate-400'}`}>
-            {isBeaconActive ? (
-              <>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300"></span>
-                </span>
-                Broadcasting Aura
-              </>
-            ) : (
-              'Not visible to travelers'
-            )}
-          </p>
-        </div>
-        <button 
-          onClick={() => setShowSettings(true)}
-          className={`relative z-10 p-3 rounded-full transition-colors cursor-pointer ${
-            isBeaconActive ? 'bg-emerald-600/50 hover:bg-emerald-600' : 'bg-slate-200 hover:bg-slate-300'
-          }`}
-        >
-          <Settings className="w-6 h-6" />
-        </button>
-      </div>
-
-      <div className="h-[300px] shrink-0 rounded-[2rem] overflow-hidden border-4 border-white/60 shadow-2xl relative">
-        <Map center={location} markers={[
-          ...activeAlerts,
-          ...activePassiveEscorts.map(t => ({
-            id: t.id,
-            position: t.location as [number, number],
-            type: 'traveler' as const,
-            label: t.name || 'Traveler'
-          }))
-        ]} />
-        {/* Radar Scanner Effect */}
-        {isBeaconActive && (
-          <div className="absolute inset-0 pointer-events-none z-[500] flex items-center justify-center opacity-30">
-            <div className="w-[200%] h-[200%] rounded-full border border-emerald-500/30 animate-[spin_8s_linear_infinite]" 
-                 style={{ background: 'conic-gradient(from 0deg, transparent 70%, rgba(16, 185, 129, 0.4) 100%)' }}>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Passive Escorts Section */}
-      <div className="bg-indigo-50/80 backdrop-blur-xl rounded-3xl border border-indigo-100 shadow-md overflow-hidden">
-        <div className="px-5 py-3 border-b border-indigo-100/50 flex justify-between items-center">
-          <h3 className="font-bold text-indigo-900 flex items-center gap-2">
-            <Eye className="w-5 h-5 text-indigo-600" />
-            Passive Escorts
-          </h3>
-          <span className="text-xs font-bold bg-indigo-200 text-indigo-800 px-2 py-1 rounded-lg">{activePassiveEscorts.length} Active</span>
-        </div>
-        <div className="p-3 flex flex-col gap-2">
-          {activePassiveEscorts.length > 0 ? (
-            activePassiveEscorts.map(escort => (
-              <div key={escort.id} className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-indigo-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">{escort.name || 'Traveler'}</p>
-                    <p className="text-xs text-slate-500">{escort.distance.toFixed(1)} miles away</p>
-                  </div>
-                </div>
-                <button className="bg-indigo-50 text-indigo-600 p-2 rounded-xl hover:bg-indigo-100 transition-colors cursor-pointer">
-                  <MessageSquare className="w-5 h-5" />
-                </button>
+      {/* Left Column: Map & Status */}
+      <div className="lg:col-span-2 h-full relative rounded-[2rem] overflow-hidden border-4 border-white/60 shadow-2xl bg-slate-100">
+        {/* Map Container */}
+        <div className="absolute inset-0 z-0">
+          <Map center={location} markers={[
+            ...activeAlerts,
+            ...activePassiveEscorts.map(t => ({
+              id: t.id,
+              position: t.location as [number, number],
+              type: 'traveler' as const,
+              label: t.name || 'Traveler'
+            }))
+          ]} />
+          {/* Radar Scanner Effect */}
+          {isBeaconActive && (
+            <div className="absolute inset-0 pointer-events-none z-[500] flex items-center justify-center opacity-30">
+              <div className="w-[200%] h-[200%] rounded-full border border-emerald-500/30 animate-[spin_8s_linear_infinite]" 
+                   style={{ background: 'conic-gradient(from 0deg, transparent 70%, rgba(16, 185, 129, 0.4) 100%)' }}>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-indigo-400 text-sm">No active passive escorts nearby.</div>
+            </div>
           )}
+        </div>
+
+        {/* Top Status Bar (Floating) */}
+        <div className={`absolute top-4 left-4 right-4 p-4 rounded-2xl shadow-lg flex justify-between items-center z-[1000] border backdrop-blur-xl transition-colors ${
+          isBeaconActive 
+            ? 'bg-emerald-600/90 text-white border-emerald-400/50' 
+            : 'bg-white/90 text-slate-500 border-white/50'
+        }`}>
+          {isBeaconActive && (
+            <div className="absolute right-0 top-0 opacity-20 pointer-events-none">
+              <Radar className="w-32 h-32 animate-spin-slow" />
+            </div>
+          )}
+          <div className="relative z-10 flex-1">
+            <h2 className="text-xl font-black flex items-center gap-2 tracking-wide">
+              <Radio className={`w-6 h-6 ${isBeaconActive ? 'text-emerald-200 animate-pulse' : 'text-slate-400'}`} /> 
+              {isBeaconActive ? 'Active Beacon' : 'Beacon Offline'}
+            </h2>
+            <p className={`font-medium mt-1 flex items-center gap-2 ${isBeaconActive ? 'text-emerald-50' : 'text-slate-400'}`}>
+              {isBeaconActive ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300"></span>
+                  </span>
+                  Broadcasting Aura
+                </>
+              ) : (
+                'Not visible to travelers'
+              )}
+            </p>
+          </div>
+          <button 
+            onClick={() => setShowSettings(true)}
+            className={`relative z-10 p-3 rounded-full transition-colors cursor-pointer shadow-sm ${
+              isBeaconActive ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+            }`}
+          >
+            <Settings className="w-6 h-6" />
+          </button>
         </div>
       </div>
 
-      {/* Emergency Alerts Section */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-xl overflow-hidden mb-2">
-        <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-3 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-bold text-slate-800 text-lg">Nearby Alerts</h3>
-          {activeAlerts.length > 0 && (
-            <motion.span 
-              animate={{ scale: [1, 1.1, 1] }} 
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs px-3 py-1.5 rounded-full font-black shadow-md"
-            >
-              {activeAlerts.length} Active
-            </motion.span>
-          )}
+      {/* Right Column: Alerts & Escorts */}
+      <div className="flex flex-col space-y-4 h-full overflow-y-auto pb-6 pr-2 custom-scrollbar">
+        {/* Emergency Alerts Section */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-xl overflow-hidden mb-2">
+          <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-3 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-bold text-slate-800 text-lg">Nearby Alerts</h3>
+            {activeAlerts.length > 0 && (
+              <motion.span 
+                animate={{ scale: [1, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs px-3 py-1.5 rounded-full font-black shadow-md"
+              >
+                {activeAlerts.length} Active
+              </motion.span>
+            )}
+          </div>
+          <div className="p-4">
+            {activeAlerts.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {activeAlerts.map(alert => (
+                  <motion.div 
+                    key={alert.id}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    className="flex flex-col gap-3 p-4 bg-gradient-to-br from-red-50 to-rose-50 border border-red-200/60 rounded-2xl shadow-sm relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
+                    
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="bg-gradient-to-br from-red-500 to-rose-600 p-3 rounded-2xl text-white shadow-lg shadow-red-500/30">
+                        <ShieldAlert className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-black text-red-700 text-lg">SOS Triggered</h4>
+                        <p className="text-sm font-semibold text-red-600/80 mb-3 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {alert.label}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 relative z-10 mt-1">
+                      <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white text-sm font-bold py-3 rounded-xl shadow-md shadow-red-500/20 cursor-pointer">
+                        Respond Now
+                      </motion.button>
+                      <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-none bg-white border-2 border-red-100 text-red-600 p-3 rounded-xl shadow-sm hover:bg-red-50 cursor-pointer">
+                        <MessageSquare className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-slate-500 py-6 font-medium">No active alerts in your area. Everything is safe! ✨</p>
+            )}
+          </div>
         </div>
-        <div className="p-4">
-          {activeAlerts.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              {activeAlerts.map(alert => (
-                <motion.div 
-                  key={alert.id}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  className="flex flex-col gap-3 p-4 bg-gradient-to-br from-red-50 to-rose-50 border border-red-200/60 rounded-2xl shadow-sm relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
-                  
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="bg-gradient-to-br from-red-500 to-rose-600 p-3 rounded-2xl text-white shadow-lg shadow-red-500/30">
-                      <ShieldAlert className="w-6 h-6 animate-pulse" />
+
+        {/* Passive Escorts Section */}
+        <div className="bg-indigo-50/80 backdrop-blur-xl rounded-3xl border border-indigo-100 shadow-md overflow-hidden">
+          <div className="px-5 py-3 border-b border-indigo-100/50 flex justify-between items-center">
+            <h3 className="font-bold text-indigo-900 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-indigo-600" />
+              Passive Escorts
+            </h3>
+            <span className="text-xs font-bold bg-indigo-200 text-indigo-800 px-2 py-1 rounded-lg">{activePassiveEscorts.length} Active</span>
+          </div>
+          <div className="p-3 flex flex-col gap-2">
+            {activePassiveEscorts.length > 0 ? (
+              activePassiveEscorts.map(escort => (
+                <div key={escort.id} className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-indigo-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-indigo-600" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-black text-red-700 text-lg">SOS Triggered</h4>
-                      <p className="text-sm font-semibold text-red-600/80 mb-3 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {alert.label}
-                      </p>
+                    <div>
+                      <p className="font-bold text-slate-800 text-sm">{escort.name || 'Traveler'}</p>
+                      <p className="text-xs text-slate-500">{escort.distance.toFixed(1)} miles away</p>
                     </div>
                   </div>
-                  
-                  <div className="flex gap-3 relative z-10 mt-1">
-                    <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white text-sm font-bold py-3 rounded-xl shadow-md shadow-red-500/20 cursor-pointer">
-                      Respond Now
-                    </motion.button>
-                    <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-none bg-white border-2 border-red-100 text-red-600 p-3 rounded-xl shadow-sm hover:bg-red-50 cursor-pointer">
-                      <MessageSquare className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-slate-500 py-6 font-medium">No active alerts in your area. Everything is safe! ✨</p>
-          )}
+                  <button className="bg-indigo-50 text-indigo-600 p-2 rounded-xl hover:bg-indigo-100 transition-colors cursor-pointer">
+                    <MessageSquare className="w-5 h-5" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-indigo-400 text-sm">No active passive escorts nearby.</div>
+            )}
+          </div>
         </div>
       </div>
 

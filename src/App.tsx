@@ -13,7 +13,8 @@ import Login from './components/Login';
 import TravelerDashboard from './components/TravelerDashboard';
 import GuardianDashboard from './components/GuardianDashboard';
 import DeveloperGuide from './components/DeveloperGuide';
-import { Code2, Loader2 } from 'lucide-react';
+import CriticalMoments from './components/CriticalMoments';
+import { Code2, Loader2, Sparkles } from 'lucide-react';
 
 export type Role = 'traveler' | 'guardian' | null;
 
@@ -65,10 +66,35 @@ function AppContent() {
       
       {/* Global decorative background elements (only show if not on guide) */}
       {!isGuide && (
-        <>
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-rose-200/40 blur-[100px] pointer-events-none"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-200/40 blur-[100px] pointer-events-none"></div>
-        </>
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <motion.div 
+            animate={{ 
+              x: [0, 50, 0], 
+              y: [0, 30, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-rose-200/40 blur-[120px]"
+          />
+          <motion.div 
+            animate={{ 
+              x: [0, -40, 0], 
+              y: [0, 50, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-200/40 blur-[120px]"
+          />
+          <motion.div 
+            animate={{ 
+              x: [0, 30, 0], 
+              y: [0, -40, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+            className="absolute top-[20%] right-[20%] w-[30%] h-[30%] rounded-full bg-purple-200/30 blur-[100px]"
+          />
+        </div>
       )}
 
       <header className={`${isGuide ? 'bg-[#1a1a1a] border-b border-[#333]' : 'bg-white/60 backdrop-blur-xl border-b border-white/50'} shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50`}>
@@ -82,6 +108,18 @@ function AppContent() {
           </motion.h1>
         </Link>
         <div className="flex items-center gap-4">
+          {!isGuide && (
+            <Link to="/critical-moments">
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-rose-600 bg-white/50 px-4 py-2 rounded-full border border-slate-200 shadow-sm cursor-pointer transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                Critical Moments
+              </motion.button>
+            </Link>
+          )}
           {!isGuide && (
             <Link to="/guide">
               <motion.button 
@@ -120,7 +158,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className={`${isGuide ? 'w-full' : 'p-4 max-w-md mx-auto h-[calc(100vh-76px)]'} relative z-10 overflow-y-auto`}>
+      <main className={`${isGuide ? 'w-full' : 'p-4 md:p-8 max-w-7xl mx-auto h-[calc(100vh-76px)]'} relative z-10 overflow-y-auto`}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route 
@@ -139,6 +177,7 @@ function AppContent() {
               path="/guardian" 
               element={role === 'guardian' ? <GuardianDashboard /> : <Navigate to="/" />} 
             />
+            <Route path="/critical-moments" element={<CriticalMoments />} />
             <Route path="/guide" element={<DeveloperGuide />} />
           </Routes>
         </AnimatePresence>

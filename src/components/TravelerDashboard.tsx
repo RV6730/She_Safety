@@ -423,53 +423,56 @@ export default function TravelerDashboard() {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col h-full space-y-4 relative"
+      className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full relative"
     >
-      {/* Top Status Bar */}
-      <div className="bg-white/80 backdrop-blur-lg p-4 rounded-3xl shadow-lg border border-white/50 flex justify-between items-center z-10">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-rose-400 to-purple-500 p-2 rounded-xl shadow-inner">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-800 leading-tight">Aura Active</h2>
-            <p className="text-xs font-semibold text-purple-600 flex items-center gap-1">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-              </span>
-              {isRouting ? 'Path-Based Matching' : 'Proximity Matching'}
-            </p>
-          </div>
+      {/* Left Column: Map & Status */}
+      <div className="lg:col-span-2 h-full relative rounded-[2rem] overflow-hidden border-4 border-white/60 shadow-2xl bg-slate-100">
+        {/* Map Container */}
+        <div className="absolute inset-0 z-0">
+          <Map center={location} markers={mapMarkers as any} routes={routes} onMarkerClick={handleMarkerClick} />
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setShowTripHistory(true)}
-            className="bg-white text-slate-700 p-2 rounded-2xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
-            title="Trip History & Reviews"
-          >
-            <History className="w-5 h-5" />
-          </button>
-          <div className={`px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-sm border transition-colors ${
-            matchedCount > 0 
-              ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-teal-800 border-teal-200' 
-              : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200'
-          }`}>
-            {matchedCount > 0 ? <ShieldCheck className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
-            {matchedCount} {isRouting ? 'On Path' : 'Nearby'}
-          </div>
-        </div>
-      </div>
 
-      {/* Map Container */}
-      <div className="flex-1 rounded-[2rem] overflow-hidden border-4 border-white/60 shadow-2xl relative min-h-[300px] z-0">
-        <Map center={location} markers={mapMarkers as any} routes={routes} onMarkerClick={handleMarkerClick} />
+        {/* Top Status Bar (Floating) */}
+        <div className="absolute top-4 left-4 right-4 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/50 flex justify-between items-center z-[1000]">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-rose-400 to-purple-500 p-2 rounded-xl shadow-inner">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold text-slate-800 leading-tight">Aura Active</h2>
+              <p className="text-xs font-semibold text-purple-600 flex items-center gap-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                </span>
+                {isRouting ? 'Path-Based Matching' : 'Proximity Matching'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowTripHistory(true)}
+              className="bg-white text-slate-700 p-2 rounded-2xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+              title="Trip History & Reviews"
+            >
+              <History className="w-5 h-5" />
+            </button>
+            <div className={`px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-sm border transition-colors ${
+              matchedCount > 0 
+                ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-teal-800 border-teal-200' 
+                : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200'
+            }`}>
+              {matchedCount > 0 ? <ShieldCheck className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
+              {matchedCount} {isRouting ? 'On Path' : 'Nearby'}
+            </div>
+          </div>
+        </div>
         
         {sosActive && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 left-4 right-4 bg-gradient-to-r from-red-600 to-rose-600 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(225,29,72,0.5)] z-[1000] flex items-center justify-between border border-red-400/50"
+            className="absolute top-24 left-4 right-4 bg-gradient-to-r from-red-600 to-rose-600 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(225,29,72,0.5)] z-[1000] flex items-center justify-between border border-red-400/50"
           >
             <div className="flex items-center gap-3 font-black text-lg tracking-wide">
               <AlertTriangle className="w-7 h-7 animate-bounce" />
@@ -483,7 +486,7 @@ export default function TravelerDashboard() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 left-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(79,70,229,0.5)] z-[1000] flex items-center justify-between border border-indigo-400/50"
+            className="absolute top-24 left-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(79,70,229,0.5)] z-[1000] flex items-center justify-between border border-indigo-400/50"
           >
             <div className="flex items-center gap-3 font-black text-lg tracking-wide">
               <Eye className="w-6 h-6 animate-pulse" />
@@ -492,8 +495,11 @@ export default function TravelerDashboard() {
             <span className="text-xs bg-white/20 px-3 py-1.5 rounded-xl font-bold backdrop-blur-md">{matchedCount} Eyes On You</span>
           </motion.div>
         )}
+      </div>
 
-        {/* Routing Overlay */}
+      {/* Right Column: Controls & Actions */}
+      <div className="flex flex-col space-y-4 h-full overflow-y-auto pb-6 pr-2 custom-scrollbar">
+        {/* Routing Options Card */}
         <AnimatePresence>
           {isRouting && !sosActive && (
             <motion.div 
@@ -501,16 +507,16 @@ export default function TravelerDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-xl p-4 rounded-2xl shadow-2xl z-[1000] border border-slate-200"
+              className="bg-white/95 backdrop-blur-xl p-5 rounded-3xl shadow-lg border border-slate-200"
             >
               <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
                 <Route className="w-5 h-5 text-purple-600" /> Route Options
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {/* Safe Route Option */}
                 <div 
                   onClick={() => setActiveRoute('safe')}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
                     activeRoute === 'safe' ? 'border-purple-500 bg-purple-50' : 'border-slate-100 hover:border-purple-200'
                   }`}
                 >
@@ -518,14 +524,14 @@ export default function TravelerDashboard() {
                     <p className="font-bold text-purple-900 flex items-center gap-2">
                       Aura Safe Route <ShieldCheck className="w-4 h-4 text-emerald-500" />
                     </p>
-                    <p className="text-xs text-purple-700 font-medium">100% Guardian Coverage</p>
+                    <p className="text-xs text-purple-700 font-medium mt-1">100% Guardian Coverage</p>
                   </div>
                   <div className="text-right min-w-[60px]">
                     {isCalculatingRoute ? (
                       <Loader2 className="w-5 h-5 animate-spin text-purple-500 ml-auto" />
                     ) : (
                       <>
-                        <p className="font-black text-purple-700">{routeStats.safe.time}</p>
+                        <p className="font-black text-purple-700 text-lg">{routeStats.safe.time}</p>
                         <p className="text-xs text-slate-500">{routeStats.safe.distance}</p>
                       </>
                     )}
@@ -535,7 +541,7 @@ export default function TravelerDashboard() {
                 {/* Direct Route Option */}
                 <div 
                   onClick={() => setActiveRoute('direct')}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
                     activeRoute === 'direct' ? 'border-red-400 bg-red-50' : 'border-slate-100 hover:border-red-200'
                   }`}
                 >
@@ -543,14 +549,14 @@ export default function TravelerDashboard() {
                     <p className="font-bold text-slate-800 flex items-center gap-2">
                       Direct Route <ShieldAlert className="w-4 h-4 text-red-500" />
                     </p>
-                    <p className="text-xs text-red-600 font-medium">Passes through Dark Zones</p>
+                    <p className="text-xs text-red-600 font-medium mt-1">Passes through Dark Zones</p>
                   </div>
                   <div className="text-right min-w-[60px]">
                     {isCalculatingRoute ? (
                       <Loader2 className="w-5 h-5 animate-spin text-slate-400 ml-auto" />
                     ) : (
                       <>
-                        <p className="font-black text-slate-700">{routeStats.direct.time}</p>
+                        <p className="font-black text-slate-700 text-lg">{routeStats.direct.time}</p>
                         <p className="text-xs text-slate-500">{routeStats.direct.distance}</p>
                       </>
                     )}
@@ -560,35 +566,75 @@ export default function TravelerDashboard() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 pb-2 z-10">
+        {/* Safety Tips Inline Card */}
+        <AnimatePresence>
+          {showSafetyTips && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="bg-gradient-to-br from-indigo-50 to-white backdrop-blur-xl p-5 rounded-3xl shadow-lg border border-indigo-100">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-indigo-900 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-indigo-500" /> 
+                    Context-Aware Safety Tips
+                  </h3>
+                  <button onClick={() => setShowSafetyTips(false)} className="text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1 cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {isFetchingTips ? (
+                  <div className="flex items-center justify-center gap-3 text-indigo-600 font-medium py-6">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Aura is analyzing your location...</span>
+                  </div>
+                ) : (
+                  <div className="text-sm text-slate-700 space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="markdown-body prose prose-sm prose-indigo max-w-none">
+                      <Markdown>{safetyTips || ''}</Markdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Action Buttons (Bento Grid) */}
+        <div className="grid grid-cols-2 gap-3 z-10">
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowAIAssistant(true)}
-          className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-3xl shadow-lg shadow-indigo-500/30 flex flex-col items-center justify-center gap-2 font-bold text-sm cursor-pointer"
+          className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-5 rounded-3xl shadow-lg shadow-indigo-500/30 flex flex-col items-start justify-between gap-4 font-bold text-sm cursor-pointer h-32"
         >
-          <Mic className="w-6 h-6" />
-          Voice AI
+          <div className="bg-white/20 p-2 rounded-2xl">
+            <Mic className="w-6 h-6" />
+          </div>
+          <span className="text-lg tracking-tight">Voice AI</span>
         </motion.button>
 
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowSafetyChat(true)}
-          className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 rounded-3xl shadow-lg shadow-teal-500/30 flex flex-col items-center justify-center gap-2 font-bold text-sm cursor-pointer"
+          className="bg-gradient-to-br from-teal-500 to-emerald-600 text-white p-5 rounded-3xl shadow-lg shadow-teal-500/30 flex flex-col items-start justify-between gap-4 font-bold text-sm cursor-pointer h-32"
         >
-          <Search className="w-6 h-6" />
-          Safety Intel
+          <div className="bg-white/20 p-2 rounded-2xl">
+            <Search className="w-6 h-6" />
+          </div>
+          <span className="text-lg tracking-tight">Safety Intel</span>
         </motion.button>
 
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleSOS}
-          className={`col-span-2 py-4 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer overflow-hidden relative ${
+          className={`col-span-2 py-6 rounded-3xl font-black text-2xl flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer overflow-hidden relative ${
             sosActive 
               ? 'bg-slate-900 text-white hover:bg-slate-800' 
               : 'bg-gradient-to-r from-red-500 via-rose-500 to-orange-500 text-white hover:shadow-[0_0_30px_rgba(244,63,94,0.6)]'
@@ -597,7 +643,7 @@ export default function TravelerDashboard() {
           {!sosActive && (
             <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
           )}
-          <AlertTriangle className={`w-7 h-7 ${sosActive ? '' : 'animate-pulse'}`} />
+          <AlertTriangle className={`w-8 h-8 ${sosActive ? '' : 'animate-pulse'}`} />
           {sosActive ? 'CANCEL SOS' : 'EMERGENCY SOS'}
         </motion.button>
         
@@ -605,100 +651,76 @@ export default function TravelerDashboard() {
           whileHover={{ scale: 1.02 }} 
           whileTap={{ scale: 0.95 }} 
           onClick={handlePassiveEscort}
-          className={`py-4 rounded-3xl font-bold text-sm flex flex-col items-center justify-center gap-1 transition-all shadow-lg cursor-pointer border ${
+          className={`col-span-1 p-5 rounded-3xl font-bold text-sm flex flex-col items-start justify-between gap-4 transition-all shadow-lg cursor-pointer border h-32 ${
             passiveEscort
               ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
               : 'bg-white/80 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white'
           }`}
         >
-          <Eye className={`w-6 h-6 ${passiveEscort ? 'text-indigo-600' : 'text-purple-500'}`} />
-          {passiveEscort ? 'End Escort' : 'Passive Escort'}
+          <div className={`p-2 rounded-2xl ${passiveEscort ? 'bg-indigo-100' : 'bg-slate-100'}`}>
+            <Eye className={`w-6 h-6 ${passiveEscort ? 'text-indigo-600' : 'text-purple-500'}`} />
+          </div>
+          <span className="text-base tracking-tight leading-tight">{passiveEscort ? 'End Escort' : 'Passive Escort'}</span>
         </motion.button>
 
         <motion.button 
           whileHover={{ scale: 1.02 }} 
           whileTap={{ scale: 0.95 }} 
           onClick={toggleRouting}
-          className={`py-4 rounded-3xl font-bold text-sm flex flex-col items-center justify-center gap-1 transition-all shadow-lg cursor-pointer border ${
+          className={`col-span-1 p-5 rounded-3xl font-bold text-sm flex flex-col items-start justify-between gap-4 transition-all shadow-lg cursor-pointer border h-32 ${
             isRouting
               ? 'bg-purple-50 border-purple-200 text-purple-700'
               : 'bg-white/80 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white'
           }`}
         >
-          <Route className={`w-6 h-6 ${isRouting ? 'text-purple-600' : 'text-rose-500'}`} />
-          {isRouting ? 'Clear Route' : 'Safe Route'}
+          <div className={`p-2 rounded-2xl ${isRouting ? 'bg-purple-100' : 'bg-slate-100'}`}>
+            <Route className={`w-6 h-6 ${isRouting ? 'text-purple-600' : 'text-rose-500'}`} />
+          </div>
+          <span className="text-base tracking-tight leading-tight">{isRouting ? 'Clear Route' : 'Safe Route'}</span>
         </motion.button>
 
         <motion.button 
           whileHover={{ scale: 1.02 }} 
           whileTap={{ scale: 0.95 }} 
           onClick={() => setShowPlaces(!showPlaces)}
-          className={`col-span-1 py-4 rounded-3xl font-bold text-sm flex flex-col items-center justify-center gap-1 transition-all shadow-lg cursor-pointer border ${
+          className={`col-span-1 p-5 rounded-3xl font-bold text-sm flex flex-col items-start justify-between gap-4 transition-all shadow-lg cursor-pointer border h-32 ${
             showPlaces
               ? 'bg-amber-50 border-amber-200 text-amber-700'
               : 'bg-white/80 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white'
           }`}
         >
-          <Star className={`w-6 h-6 ${showPlaces ? 'text-amber-500 fill-amber-500' : 'text-amber-500'}`} />
-          {showPlaces ? 'Hide Spots' : 'Safe Spots'}
+          <div className={`p-2 rounded-2xl ${showPlaces ? 'bg-amber-100' : 'bg-slate-100'}`}>
+            <Star className={`w-6 h-6 ${showPlaces ? 'text-amber-500 fill-amber-500' : 'text-amber-500'}`} />
+          </div>
+          <span className="text-base tracking-tight leading-tight">{showPlaces ? 'Hide Spots' : 'Safe Spots'}</span>
         </motion.button>
 
         <motion.button 
           whileHover={{ scale: 1.02 }} 
           whileTap={{ scale: 0.95 }} 
           onClick={() => setShowGuardianList(true)}
-          className="col-span-1 py-4 rounded-3xl font-bold text-sm flex flex-col items-center justify-center gap-1 transition-all shadow-lg cursor-pointer border bg-white/80 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white"
+          className="col-span-1 p-5 rounded-3xl font-bold text-sm flex flex-col items-start justify-between gap-4 transition-all shadow-lg cursor-pointer border bg-white/80 backdrop-blur-md border-white/50 text-slate-700 hover:bg-white h-32"
         >
-          <Users className="w-6 h-6 text-emerald-500" />
-          Guardians
+          <div className="p-2 rounded-2xl bg-slate-100">
+            <Users className="w-6 h-6 text-emerald-500" />
+          </div>
+          <span className="text-base tracking-tight leading-tight">Guardians</span>
         </motion.button>
 
-        <motion.button 
-          whileHover={{ scale: 1.02 }} 
-          whileTap={{ scale: 0.95 }} 
-          onClick={fetchSafetyTips}
-          className="col-span-2 py-4 rounded-3xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer border bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
-        >
-          <Sparkles className="w-5 h-5 text-indigo-500" />
-          Get Context-Aware Safety Tips
-        </motion.button>
-      </div>
-
-      {/* Modals */}
-      <AnimatePresence>
-        {/* Safety Tips Overlay */}
-        {showSafetyTips && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-24 left-4 right-4 bg-white/95 backdrop-blur-xl p-5 rounded-3xl shadow-2xl z-[1000] border border-indigo-100"
+        {!showSafetyTips && (
+          <motion.button 
+            whileHover={{ scale: 1.02 }} 
+            whileTap={{ scale: 0.95 }} 
+            onClick={fetchSafetyTips}
+            className="col-span-2 py-5 rounded-3xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer border bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
           >
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-bold text-indigo-900 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-indigo-500" /> 
-                Context-Aware Safety Tips
-              </h3>
-              <button onClick={() => setShowSafetyTips(false)} className="text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1 cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {isFetchingTips ? (
-              <div className="flex items-center justify-center gap-3 text-indigo-600 font-medium py-6">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span>Aura is analyzing your location...</span>
-              </div>
-            ) : (
-              <div className="text-sm text-slate-700 space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="markdown-body prose prose-sm prose-indigo max-w-none">
-                  <Markdown>{safetyTips || ''}</Markdown>
-                </div>
-              </div>
-            )}
-          </motion.div>
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+            Get Context-Aware Safety Tips
+          </motion.button>
         )}
-
+      </div>
+    </div>
+    <AnimatePresence>
         {/* AI Assistant Modal */}
         {showAIAssistant && (
           <AIAssistant key="ai-assistant" onClose={() => setShowAIAssistant(false)} />
