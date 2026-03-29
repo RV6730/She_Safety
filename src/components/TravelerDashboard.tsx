@@ -499,6 +499,44 @@ export default function TravelerDashboard() {
 
       {/* Right Column: Controls & Actions */}
       <div className="flex flex-col space-y-4 h-full overflow-y-auto pb-6 pr-2 custom-scrollbar">
+        
+        {/* Profile & Safety Score Header */}
+        <div className="bg-white/80 backdrop-blur-xl p-5 rounded-3xl shadow-lg border border-white/50 flex items-center justify-between mb-2">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" className="w-14 h-14 rounded-full border-2 border-white shadow-md" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+            </div>
+            <div>
+              <h3 className="font-black text-slate-800 text-lg leading-tight">Sarah J.</h3>
+              <p className="text-xs text-slate-500 font-medium">Solo Traveler</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center relative w-14 h-14">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path
+                className="text-slate-100"
+                strokeWidth="3"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className="text-emerald-500"
+                strokeDasharray="98, 100"
+                strokeWidth="3"
+                strokeLinecap="round"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center flex-col">
+              <span className="text-[10px] font-black text-emerald-600 leading-none">98%</span>
+            </div>
+          </div>
+        </div>
+
         {/* Routing Options Card */}
         <AnimatePresence>
           {isRouting && !sosActive && (

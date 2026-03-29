@@ -1,11 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Car, Footprints, Train, Building, MapPin, 
   Coffee, BatteryLow, Timer, Users, PhoneOff,
   ChevronDown, ShieldAlert, Navigation, Smartphone,
-  AlertTriangle, ShieldCheck
+  AlertTriangle, ShieldCheck, Phone, Shield, Ambulance, Flame, Loader2
 } from 'lucide-react';
+
+const EMERGENCY_DATA: Record<string, any> = {
+  'US': { police: '911', ambulance: '911', fire: '911', hotline: '1-800-799-SAFE' },
+  'GB': { police: '999', ambulance: '999', fire: '999', hotline: '0808 2000 247' },
+  'IN': { police: '100', ambulance: '102', fire: '101', hotline: '1091 (Women Helpline)' },
+  'AU': { police: '000', ambulance: '000', fire: '000', hotline: '1800 737 732' },
+  'CA': { police: '911', ambulance: '911', fire: '911', hotline: '1-866-863-0511' },
+  'FR': { police: '17', ambulance: '15', fire: '18', hotline: '3919' },
+  'DE': { police: '110', ambulance: '112', fire: '112', hotline: '08000 116 016' },
+  'JP': { police: '110', ambulance: '119', fire: '119', hotline: '#8103' },
+  'BR': { police: '190', ambulance: '192', fire: '193', hotline: '180' },
+  'ZA': { police: '10111', ambulance: '10177', fire: '10177', hotline: '0800 150 150' },
+  'DEFAULT': { police: '112', ambulance: '112', fire: '112', hotline: 'Local Embassy' }
+};
+
+function LocalEmergencyContacts() {
+  const [loading, setLoading] = useState(true);
+  const [locationName, setLocationName] = useState('Detecting your location...');
+  const [contacts, setContacts] = useState(EMERGENCY_DATA['DEFAULT']);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLoading(false);
+      setError("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const data = await res.json();
+          
+          const countryCode = data.countryCode?.toUpperCase();
+          const city = data.city || data.locality || 'Unknown City';
+          const country = data.countryName || 'Unknown Country';
+          
+          setLocationName(`${city}, ${country}`);
+          
+          if (countryCode && EMERGENCY_DATA[countryCode]) {
+            setContacts(EMERGENCY_DATA[countryCode]);
+          } else {
+            setContacts(EMERGENCY_DATA['DEFAULT']);
+          }
+        } catch (err) {
+          console.error("Error fetching location:", err);
+          setError("Could not determine your exact location.");
+          setLocationName("International Default");
+        } finally {
+          setLoading(false);
+        }
+      },
+      (err) => {
+        console.error("Geolocation error:", err);
+        setError("Location access denied. Showing defaults.");
+        setLocationName("International Default");
+        setLoading(false);
+      },
+      { timeout: 10000 }
+    );
+  }, []);
+
+  return (
+    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 shadow-2xl border border-slate-700 mb-12 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div className="text-white">
+          <h3 className="text-2xl font-black flex items-center gap-3 mb-2">
+            <Phone className="w-6 h-6 text-rose-400" />
+            Local Emergency Contacts
+          </h3>
+          <p className="text-slate-300 flex items-center gap-2 font-medium">
+            <MapPin className="w-4 h-4 text-slate-400" />
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> Detecting...
+              </span>
+            ) : (
+              locationName
+            )}
+          </p>
+          {error && <p className="text-rose-400 text-xs mt-1">{error}</p>}
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+          <a href={`tel:${contacts.police}`} className="bg-white/10 hover:bg-white/20 border border-white/10 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors group">
+            <Shield className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-bold text-lg">{contacts.police}</span>
+            <span className="text-slate-400 text-[10px] uppercase tracking-wider font-black">Police</span>
+          </a>
+          <a href={`tel:${contacts.ambulance}`} className="bg-white/10 hover:bg-white/20 border border-white/10 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors group">
+            <Ambulance className="w-6 h-6 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-bold text-lg">{contacts.ambulance}</span>
+            <span className="text-slate-400 text-[10px] uppercase tracking-wider font-black">Ambulance</span>
+          </a>
+          <a href={`tel:${contacts.fire}`} className="bg-white/10 hover:bg-white/20 border border-white/10 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors group">
+            <Flame className="w-6 h-6 text-orange-400 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-bold text-lg">{contacts.fire}</span>
+            <span className="text-slate-400 text-[10px] uppercase tracking-wider font-black">Fire</span>
+          </a>
+          <a href={`tel:${contacts.hotline.split(' ')[0]}`} className="bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors group">
+            <Phone className="w-6 h-6 text-rose-400 group-hover:scale-110 transition-transform" />
+            <span className="text-rose-100 font-bold text-sm text-center leading-tight">{contacts.hotline}</span>
+            <span className="text-rose-300 text-[10px] uppercase tracking-wider font-black">Women's Helpline</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const MOMENTS = [
   {
@@ -115,6 +228,8 @@ export default function CriticalMoments() {
 
   return (
     <div className="w-full max-w-5xl mx-auto py-16 px-4 z-10 relative">
+      <LocalEmergencyContacts />
+
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-4">
           The 10 Critical Moments

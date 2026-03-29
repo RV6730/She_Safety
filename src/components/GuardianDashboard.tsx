@@ -216,6 +216,27 @@ export default function GuardianDashboard() {
 
       {/* Right Column: Alerts & Escorts */}
       <div className="flex flex-col space-y-4 h-full overflow-y-auto pb-6 pr-2 custom-scrollbar">
+        
+        {/* City Overview Header */}
+        <div className="bg-white/80 backdrop-blur-xl p-5 rounded-3xl shadow-lg border border-white/50 flex items-center justify-between mb-2">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full border-2 border-white shadow-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+            </div>
+            <div>
+              <h3 className="font-black text-slate-800 text-lg leading-tight">New Delhi</h3>
+              <p className="text-xs text-slate-500 font-medium">Guardian Network Active</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-end justify-center">
+            <span className="text-2xl font-black text-indigo-600 leading-none">124</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Guardians</span>
+          </div>
+        </div>
+
         {/* Emergency Alerts Section */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-xl overflow-hidden mb-2">
           <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-3 border-b border-slate-100 flex justify-between items-center">
@@ -282,11 +303,14 @@ export default function GuardianDashboard() {
           </div>
           <div className="p-3 flex flex-col gap-2">
             {activePassiveEscorts.length > 0 ? (
-              activePassiveEscorts.map(escort => (
+              activePassiveEscorts.map((escort, index) => (
                 <div key={escort.id} className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-indigo-50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-indigo-600" />
+                    <div className="relative">
+                      <img src={`https://randomuser.me/api/portraits/women/${index + 20}.jpg`} alt="Traveler" className="w-10 h-10 rounded-full border-2 border-indigo-100" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center">
+                        <MapPin className="w-2 h-2 text-white" />
+                      </div>
                     </div>
                     <div>
                       <p className="font-bold text-slate-800 text-sm">{escort.name || 'Traveler'}</p>
