@@ -18,7 +18,7 @@ const getDistance = (p1: [number, number], p2: [number, number]) => {
 };
 
 export default function GuardianDashboard() {
-  const [location, setLocation] = useState<[number, number]>([51.505, -0.09]);
+  const [location, setLocation] = useState<[number, number]>([28.6139, 77.2090]);
   const [isBeaconActive, setIsBeaconActive] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [escortDistance, setEscortDistance] = useState(5);

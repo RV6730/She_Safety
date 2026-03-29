@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, MapPin, Navigation, ShieldCheck, Eye, Sparkles, Route, ShieldAlert, Users, Star, History, X, MessageSquare, CheckCircle, Mic, Search } from 'lucide-react';
+import { AlertTriangle, MapPin, Navigation, ShieldCheck, Eye, Sparkles, Route, ShieldAlert, Users, Star, History, X, MessageSquare, CheckCircle, Mic, Search, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Markdown from 'react-markdown';
 import Map from './Map';
 import AIAssistant from './AIAssistant';
 import SafetyChat from './SafetyChat';
 import { collection, addDoc, onSnapshot, query, where, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
+import { GoogleGenAI } from '@google/genai';
 
 export default function TravelerDashboard() {
   const [sosActive, setSosActive] = useState(false);
@@ -13,7 +15,7 @@ export default function TravelerDashboard() {
   const [isRouting, setIsRouting] = useState(false);
   const [showPlaces, setShowPlaces] = useState(false);
   const [activeRoute, setActiveRoute] = useState<'safe' | 'direct'>('safe');
-  const [location, setLocation] = useState<[number, number]>([51.505, -0.09]);
+  const [location, setLocation] = useState<[number, number]>([28.6139, 77.2090]);
 
   // Modals state
   const [showTripHistory, setShowTripHistory] = useState(false);
@@ -31,6 +33,72 @@ export default function TravelerDashboard() {
   const [comments, setComments] = useState<any[]>([]);
   const [pastTrips, setPastTrips] = useState<any[]>([]);
   const [liveGuardians, setLiveGuardians] = useState<any[]>([]);
+
+  // Safety Tips State
+  const [safetyTips, setSafetyTips] = useState<string | null>(null);
+  const [isFetchingTips, setIsFetchingTips] = useState(false);
+  const [showSafetyTips, setShowSafetyTips] = useState(false);
+
+  // Route Stats State
+  const [routeStats, setRouteStats] = useState({
+    safe: { time: '-- min', distance: '-- mi' },
+    direct: { time: '-- min', distance: '-- mi' }
+  });
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+
+  const fetchSafetyTips = async () => {
+    setIsFetchingTips(true);
+    setShowSafetyTips(true);
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        setSafetyTips("Gemini API Key is missing. Cannot fetch safety tips.");
+        setIsFetchingTips(false);
+        return;
+      }
+      
+      const ai = new GoogleGenAI({ apiKey });
+      
+      let prompt = `Provide 3 short, actionable safety tips for a traveler currently at coordinates ${location[0]}, ${location[1]}.`;
+      if (isRouting) {
+        prompt = `Provide 3 short, actionable safety tips for a traveler traveling from coordinates ${location[0]}, ${location[1]} to ${destination[0]}, ${destination[1]}.`;
+      }
+      
+      prompt += " Keep the tips concise, practical, and formatted as a bulleted list. Do not use markdown headers, just bullet points.";
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+      });
+
+      setSafetyTips(response.text || "No safety tips available at the moment.");
+    } catch (error) {
+      console.error("Error fetching safety tips:", error);
+      setSafetyTips("Failed to load safety tips. Please try again later.");
+    } finally {
+      setIsFetchingTips(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isRouting) {
+      setIsCalculatingRoute(true);
+      // Simulate API call for route calculation
+      const timer = setTimeout(() => {
+        setRouteStats({
+          safe: { time: '18 min', distance: '1.2 mi' },
+          direct: { time: '12 min', distance: '0.8 mi' }
+        });
+        setIsCalculatingRoute(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else {
+      setRouteStats({
+        safe: { time: '-- min', distance: '-- mi' },
+        direct: { time: '-- min', distance: '-- mi' }
+      });
+    }
+  }, [isRouting]);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -87,13 +155,13 @@ export default function TravelerDashboard() {
 
   // Base list of guardians
   const baseGuardians = [
-    { id: '1', position: [51.508, -0.11] as [number, number], name: 'Sarah' },
-    { id: '2', position: [51.503, -0.08] as [number, number], name: 'Elena' },
-    { id: '3', position: [51.512, -0.07] as [number, number], name: 'Maria' },
-    { id: '4', position: [51.509, -0.065] as [number, number], name: 'Jessica' },
-    { id: '5', position: [51.501, -0.10] as [number, number], name: 'Chloe' },
-    { id: '6', position: [51.515, -0.09] as [number, number], name: 'David' },
-    { id: '7', position: [51.505, -0.06] as [number, number], name: 'Emma' },
+    { id: '1', position: [28.6189, 77.1890] as [number, number], name: 'Sarah' },
+    { id: '2', position: [28.6089, 77.2190] as [number, number], name: 'Elena' },
+    { id: '3', position: [28.6239, 77.2290] as [number, number], name: 'Maria' },
+    { id: '4', position: [28.6189, 77.2340] as [number, number], name: 'Jessica' },
+    { id: '5', position: [28.6039, 77.1990] as [number, number], name: 'Chloe' },
+    { id: '6', position: [28.6289, 77.2090] as [number, number], name: 'David' },
+    { id: '7', position: [28.6139, 77.2390] as [number, number], name: 'Emma' },
   ];
 
   // Combine live guardians with base guardians
@@ -107,7 +175,7 @@ export default function TravelerDashboard() {
   ];
 
   // Mock destination for routing
-  const destination: [number, number] = [51.516, -0.06];
+  const destination: [number, number] = [28.6289, 77.2390];
 
   // Simulated Google Maps Distance Matrix API routing
   const routes = isRouting ? [
@@ -120,7 +188,7 @@ export default function TravelerDashboard() {
     },
     {
       id: 'safe',
-      positions: [location, [51.503, -0.08], [51.512, -0.07], [51.509, -0.065], destination] as [number, number][],
+      positions: [location, [28.6089, 77.2190], [28.6239, 77.2290], [28.6189, 77.2340], destination] as [number, number][],
       color: activeRoute === 'safe' ? '#8b5cf6' : '#cbd5e1', // Purple for Aura route
       weight: activeRoute === 'safe' ? 5 : 2
     }
@@ -169,9 +237,9 @@ export default function TravelerDashboard() {
 
   // Mock local safe spots
   const localPlaces = [
-    { id: 'p1', position: [51.51, -0.08] as [number, number], name: 'St. Elmo 24/7 Diner', rating: 4.9, comment: '"Staff is trained in safety protocols. Very well lit." - Guardian Sarah' },
-    { id: 'p2', position: [51.506, -0.07] as [number, number], name: 'Riverside Walkway', rating: 4.5, comment: '"Lots of CCTV and regular patrols. Good for evening walks." - Guardian Maria' },
-    { id: 'p3', position: [51.514, -0.09] as [number, number], name: 'Central Transit Hub', rating: 4.7, comment: '"Always busy, security on site 24/7." - Guardian Elena' },
+    { id: 'p1', position: [28.6239, 77.2190] as [number, number], name: 'St. Elmo 24/7 Diner', rating: 4.9, comment: '"Staff is trained in safety protocols. Very well lit." - Guardian Sarah' },
+    { id: 'p2', position: [28.6189, 77.2290] as [number, number], name: 'Riverside Walkway', rating: 4.5, comment: '"Lots of CCTV and regular patrols. Good for evening walks." - Guardian Maria' },
+    { id: 'p3', position: [28.6289, 77.2090] as [number, number], name: 'Central Transit Hub', rating: 4.7, comment: '"Always busy, security on site 24/7." - Guardian Elena' },
   ];
 
   // Dynamically map guardians based on the active route
@@ -452,9 +520,15 @@ export default function TravelerDashboard() {
                     </p>
                     <p className="text-xs text-purple-700 font-medium">100% Guardian Coverage</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-purple-700">18 min</p>
-                    <p className="text-xs text-slate-500">1.2 mi</p>
+                  <div className="text-right min-w-[60px]">
+                    {isCalculatingRoute ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-purple-500 ml-auto" />
+                    ) : (
+                      <>
+                        <p className="font-black text-purple-700">{routeStats.safe.time}</p>
+                        <p className="text-xs text-slate-500">{routeStats.safe.distance}</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -471,9 +545,15 @@ export default function TravelerDashboard() {
                     </p>
                     <p className="text-xs text-red-600 font-medium">Passes through Dark Zones</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-slate-700">12 min</p>
-                    <p className="text-xs text-slate-500">0.8 mi</p>
+                  <div className="text-right min-w-[60px]">
+                    {isCalculatingRoute ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-slate-400 ml-auto" />
+                    ) : (
+                      <>
+                        <p className="font-black text-slate-700">{routeStats.direct.time}</p>
+                        <p className="text-xs text-slate-500">{routeStats.direct.distance}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -572,10 +652,53 @@ export default function TravelerDashboard() {
           <Users className="w-6 h-6 text-emerald-500" />
           Guardians
         </motion.button>
+
+        <motion.button 
+          whileHover={{ scale: 1.02 }} 
+          whileTap={{ scale: 0.95 }} 
+          onClick={fetchSafetyTips}
+          className="col-span-2 py-4 rounded-3xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer border bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+        >
+          <Sparkles className="w-5 h-5 text-indigo-500" />
+          Get Context-Aware Safety Tips
+        </motion.button>
       </div>
 
       {/* Modals */}
       <AnimatePresence>
+        {/* Safety Tips Overlay */}
+        {showSafetyTips && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-24 left-4 right-4 bg-white/95 backdrop-blur-xl p-5 rounded-3xl shadow-2xl z-[1000] border border-indigo-100"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-bold text-indigo-900 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-500" /> 
+                Context-Aware Safety Tips
+              </h3>
+              <button onClick={() => setShowSafetyTips(false)} className="text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {isFetchingTips ? (
+              <div className="flex items-center justify-center gap-3 text-indigo-600 font-medium py-6">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Aura is analyzing your location...</span>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-700 space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="markdown-body prose prose-sm prose-indigo max-w-none">
+                  <Markdown>{safetyTips || ''}</Markdown>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
         {/* AI Assistant Modal */}
         {showAIAssistant && (
           <AIAssistant key="ai-assistant" onClose={() => setShowAIAssistant(false)} />

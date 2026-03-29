@@ -16,6 +16,7 @@ export default function SafetyChat({ onClose, location }: SafetyChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'search' | 'maps'>('search');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,8 +26,44 @@ export default function SafetyChat({ onClose, location }: SafetyChatProps) {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) return;
+    const ai = new GoogleGenAI({ apiKey });
+
+    const tools: any[] = [];
+    let toolConfig: any = undefined;
+
+    if (mode === 'search') {
+      tools.push({ googleSearch: {} });
+      toolConfig = { includeServerSideToolInvocations: true };
+    } else if (mode === 'maps') {
+      tools.push({ googleMaps: {} });
+      toolConfig = {
+        retrievalConfig: {
+          latLng: {
+            latitude: location[0],
+            longitude: location[1]
+          }
+        }
+      };
+    }
+
+    chatRef.current = ai.chats.create({
+      model: 'gemini-3-flash-preview',
+      config: {
+        systemInstruction: "You are Aura, a travel safety assistant. Provide concise, helpful, and accurate information to keep the user safe.",
+        tools,
+        toolConfig
+      }
+    });
+
+    // Clear messages when mode changes
+    setMessages([]);
+  }, [mode, location]);
+
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !chatRef.current) return;
 
     const userMsg = input;
     setInput('');
@@ -34,35 +71,7 @@ export default function SafetyChat({ onClose, location }: SafetyChatProps) {
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-      const ai = new GoogleGenAI({ apiKey: apiKey! });
-
-      const tools: any[] = [];
-      let toolConfig: any = undefined;
-
-      if (mode === 'search') {
-        tools.push({ googleSearch: {} });
-      } else if (mode === 'maps') {
-        tools.push({ googleMaps: {} });
-        toolConfig = {
-          retrievalConfig: {
-            latLng: {
-              latitude: location[0],
-              longitude: location[1]
-            }
-          }
-        };
-      }
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: userMsg,
-        config: {
-          systemInstruction: "You are Aura, a travel safety assistant. Provide concise, helpful, and accurate information to keep the user safe.",
-          tools,
-          toolConfig
-        }
-      });
+      const response = await chatRef.current.sendMessage({ message: userMsg });
 
       let links: any[] = [];
       if (mode === 'search') {
