@@ -1,0 +1,121 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'name', 'email', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email) &&
+             data.role in ['traveler', 'guardian'] &&
+             data.createdAt is string;
+    }
+
+    function isValidTrip(data) {
+      return hasRequiredFields(['travelerId', 'status', 'startTime']) &&
+             data.travelerId is string && data.travelerId.size() > 0 && data.travelerId.size() < 100 &&
+             data.status in ['active', 'completed', 'cancelled'] &&
+             data.startTime is string;
+    }
+
+    function isValidComment(data) {
+      return hasRequiredFields(['guardianId', 'travelerId', 'travelerName', 'tripId', 'rating', 'text', 'date']) &&
+             data.guardianId is string && data.guardianId.size() > 0 && data.guardianId.size() < 100 &&
+             data.travelerId is string && data.travelerId.size() > 0 && data.travelerId.size() < 100 &&
+             data.travelerName is string && data.travelerName.size() > 0 && data.travelerName.size() < 100 &&
+             data.tripId is string && data.tripId.size() > 0 && data.tripId.size() < 100 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.text is string && data.text.size() >= 0 && data.text.size() < 1000 &&
+             data.date is string;
+    }
+
+    function isValidSafeSpot(data) {
+      return hasRequiredFields(['position', 'name', 'rating', 'comment', 'addedBy']) &&
+             data.position is list && data.position.size() == 2 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() >= 0 && data.comment.size() < 500 &&
+             data.addedBy is string && data.addedBy.size() > 0 && data.addedBy.size() < 100;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles (needed to see guardians on map)
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
+      allow delete: if isOwner(userId);
+    }
+
+    match /trips/{tripId} {
+      // Traveler or assigned guardian can read
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.travelerId || request.auth.uid == resource.data.guardianId);
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.travelerId && isValidTrip(request.resource.data);
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.travelerId || request.auth.uid == resource.data.guardianId) && isValidTrip(request.resource.data) && request.resource.data.travelerId == resource.data.travelerId;
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.travelerId;
+    }
+
+    match /comments/{commentId} {
+      // Anyone authenticated can read comments
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.travelerId && isValidComment(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.travelerId && isValidComment(request.resource.data) && request.resource.data.travelerId == resource.data.travelerId;
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.travelerId;
+    }
+
+    match /safeSpots/{spotId} {
+      // Anyone authenticated can read safe spots
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.addedBy && isValidSafeSpot(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.addedBy && isValidSafeSpot(request.resource.data) && request.resource.data.addedBy == resource.data.addedBy;
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.addedBy;
+    }
+  }
+}

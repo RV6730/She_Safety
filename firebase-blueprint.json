@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application, either a traveler or a guardian.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "User's display name" },
+        "email": { "type": "string", "format": "email", "description": "User's email address" },
+        "role": { "type": "string", "enum": ["traveler", "guardian"], "description": "User's role" },
+        "isBeaconActive": { "type": "boolean", "description": "Whether the guardian's beacon is active" },
+        "escortDistance": { "type": "number", "description": "Max escort distance for guardians" },
+        "notificationsEnabled": { "type": "boolean", "description": "Whether push notifications are enabled" },
+        "location": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Current location [lat, lng]"
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "Trip": {
+      "title": "Trip",
+      "description": "A trip taken by a traveler, optionally escorted by a guardian.",
+      "type": "object",
+      "properties": {
+        "travelerId": { "type": "string", "description": "UID of the traveler" },
+        "guardianId": { "type": "string", "description": "UID of the guardian (optional)" },
+        "status": { "type": "string", "enum": ["active", "completed", "cancelled"] },
+        "startLocation": { "type": "array", "items": { "type": "number" } },
+        "endLocation": { "type": "array", "items": { "type": "number" } },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "reviewed": { "type": "boolean" }
+      },
+      "required": ["travelerId", "status", "startTime"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A review left by a traveler for a guardian.",
+      "type": "object",
+      "properties": {
+        "guardianId": { "type": "string", "description": "UID of the guardian being reviewed" },
+        "travelerId": { "type": "string", "description": "UID of the traveler leaving the review" },
+        "travelerName": { "type": "string" },
+        "tripId": { "type": "string" },
+        "rating": { "type": "number" },
+        "text": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["guardianId", "travelerId", "travelerName", "tripId", "rating", "text", "date"]
+    },
+    "SafeSpot": {
+      "title": "SafeSpot",
+      "description": "A safe location suggested by locals or guardians.",
+      "type": "object",
+      "properties": {
+        "position": { "type": "array", "items": { "type": "number" } },
+        "name": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "addedBy": { "type": "string", "description": "UID of the user who added it" }
+      },
+      "required": ["position", "name", "rating", "comment", "addedBy"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles."
+    },
+    "trips/{tripId}": {
+      "schema": { "$ref": "#/entities/Trip" },
+      "description": "Stores trip records."
+    },
+    "comments/{commentId}": {
+      "schema": { "$ref": "#/entities/Comment" },
+      "description": "Stores guardian reviews."
+    },
+    "safeSpots/{spotId}": {
+      "schema": { "$ref": "#/entities/SafeSpot" },
+      "description": "Stores safe spot locations."
+    }
+  }
+}
